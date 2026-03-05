@@ -28,6 +28,11 @@ public class Employee {
         this.phone = phone;
         this.account = account;
     }
+    
+
+     public String getEmpId() { return empId; }
+     public String getName() { return name; }
+
 
     @Override
     public String toString() {

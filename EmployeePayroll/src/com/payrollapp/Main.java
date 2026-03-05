@@ -1,95 +1,136 @@
 /*
  * =============================================================
- * USE CASE 2: EMPLOYEE AUTHENTICATION & LOGIN
+ * USE CASE 3: PAYSLIP GENERATION
  * =============================================================
  *
  * Goal of this Use Case:
- * - Introduce inheritance and polymorphism
- * - Show how different user types share common behavior
- * - Demonstrate a simple authentication flow
+ * - Understand how multiple objects collaborate
+ * - Learn HAS-A relationships between classes
+ * - Separate calculation logic from data representation
  *
- * New ideas introduced here:
- * - Abstract class
- * - Method overriding
- * - Runtime decision-making
+ * New ideas introduced in UC3:
+ * - Aggregation
+ * - Composition
+ * - Service class for business logic
  *
- * This use case builds directly on UC1.
- *
- * @author Developer
- * @version 2.0
-
- */
-
+ * This use case builds on:
+ * - UC1: Object creation
+ * - UC2: Object roles and responsibilities
+*/
 package com.payrollapp;
+
 import com.payrollapp.registration.*;
+import com.payrollapp.payroll.*;
 import com.payrollapp.authentication.*;
 
 import java.io.IOException;
 import java.util.Scanner;
 
-
 public class Main {
 
-	public static void main(String[] args) {
+    public static void main(String[] args) {
 
-		Scanner sc = new Scanner(System.in);
-		System.out.println("=== USE CASE 1: EMPLOYEE REGISTRATION ===");
+        Scanner sc = new Scanner(System.in);
+        Employee emp = null; // must be visible outside try block
 
-		try {
-			System.out.print("Enter Employee ID (EMP-XXXX): ");
-			String empId = sc.nextLine();
-			Validator.validateEmpId(empId);
+        System.out.println("=== USE CASE 1: EMPLOYEE REGISTRATION ===");
 
-			System.out.print("Enter Name: ");
-			String name = sc.nextLine();
+        try {
+            System.out.print("Enter Employee ID (EMP-XXXX): ");
+            String empId = sc.nextLine();
+            Validator.validateEmpId(empId);
 
-			System.out.print("Enter Email: ");
-			String email = sc.nextLine();
-			Validator.validateEmail(email);
+            System.out.print("Enter Name: ");
+            String name = sc.nextLine();
 
-			System.out.print("Enter Phone Number: ");
-			String phone = sc.nextLine();
-			Validator.validatePhone(phone);
+            System.out.print("Enter Email: ");
+            String email = sc.nextLine();
+            Validator.validateEmail(email);
 
-			System.out.print("Create Username: ");
-			String username = sc.nextLine();
+            System.out.print("Enter Phone Number: ");
+            String phone = sc.nextLine();
+            Validator.validatePhone(phone);
 
-			System.out.print("Create Password: ");
-			String password = sc.nextLine();
+            System.out.print("Create Username: ");
+            String username = sc.nextLine();
 
-			UserAccount ua = new UserAccount(username, password);
+            System.out.print("Create Password: ");
+            String password = sc.nextLine();
 
-			Employee emp = new Employee(empId, name, email, phone, ua);
+            UserAccount ua = new UserAccount(username, password);
 
-			emp.persist(); // save to file
+            emp = new Employee(empId, name, email, phone, ua);
 
-			System.out.println("\nEmployee Registered Successfully!\n");
-			System.out.println(emp);
+            emp.persist(); // save to file
 
-		} catch (ValidationException e) {
-			System.out.println("\nValidation Failed: " + e.getMessage());
-			return;
-		} catch (IOException e) {
-			System.out.println("\nError saving employee data!");
-			return;
-		}
+            System.out.println("\nEmployee Registered Successfully!\n");
+            System.out.println(emp);
 
+        } catch (ValidationException e) {
+            System.out.println("\nValidation Failed: " + e.getMessage());
+            return;
+        } catch (IOException e) {
+            System.out.println("\nError saving employee data!");
+            return;
+        }
 
-		System.out.println("=== USE CASE 2: EMPLOYEE AUTHENTICATION & LOGIN ===\n");
+        /*
+         * =============================================================
+         * USE CASE 2: EMPLOYEE AUTHENTICATION & LOGIN
+         * =============================================================
+         */
 
-		AuthenticationService auth = new AuthenticationService();
-		Session session = auth.login();
+        System.out.println("\n=== USE CASE 2: EMPLOYEE AUTHENTICATION & LOGIN ===");
 
-		if (session != null) {
-			System.out.println("\n" + session);
-			if (!session.isExpired()) {
-				System.out.println("Session active and valid.");
-			} else {
-				System.out.println("Session expired. Please login again.");
-			}
-		}
+        AuthenticationService auth = new AuthenticationService();
+        Session session = auth.login();
 
+        if (session == null) {
+            System.out.println("Login failed. Cannot continue.");
+            return;
+        }
 
-	}
+        System.out.println("\n" + session);
 
+        if (session.isExpired()) {
+            System.out.println("Session expired. Please login again.");
+            return;
+        }
+
+        System.out.println("Session active and valid.");
+
+        /*
+         * =============================================================
+         * USE CASE 3: PAYSLIP GENERATION
+         * =============================================================
+         */
+
+        System.out.println("\n=== USE CASE 3: PAYSLIP GENERATION ===");
+
+        try {
+
+            System.out.print("Enter Month: ");
+            String month = sc.nextLine();
+
+            System.out.print("Enter Base Salary: ");
+            double base = sc.nextDouble();
+
+            System.out.print("Enter HRA: ");
+            double hra = sc.nextDouble();
+
+            System.out.print("Enter Allowances: ");
+            double allowances = sc.nextDouble();
+
+            PayrollService service = new PayrollService();
+
+            Payslip payslip = service.generatePayslip(emp, base, hra, allowances, month);
+
+            System.out.println(payslip);
+
+        } catch (Exception e) {
+            System.out.println("Error generating payslip");
+        }
+
+        sc.close();
+    }
 }

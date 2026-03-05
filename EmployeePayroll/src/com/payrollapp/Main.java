@@ -1,36 +1,28 @@
 /*
- * ================================================================
- * USE CASE 1: EMPLOYEE REGISTRATION
- * ================================================================
+ * =============================================================
+ * USE CASE 2: EMPLOYEE AUTHENTICATION & LOGIN
+ * =============================================================
  *
  * Goal of this Use Case:
- * - Understand how multiple classes work together
- * - Learn how objects are created and used
- * - See how a real-world problem is broken into small parts
+ * - Introduce inheritance and polymorphism
+ * - Show how different user types share common behavior
+ * - Demonstrate a simple authentication flow
  *
- * At this stage, focus on:
- * - What each class represents
- * - How main() coordinates the flow
- * 
-
- * --------------------- Main Class ---------------------
+ * New ideas introduced here:
+ * - Abstract class
+ * - Method overriding
+ * - Runtime decision-making
  *
- * Entry point of Use Case 1.
- *
- * Execution Flow:
- * 1. Take input from user
- * 2. Validate input
- * 3. Create objects
- * 4. Persist data
- * 5. Display confirmation
+ * This use case builds directly on UC1.
  *
  * @author Developer
- * @version 1.0
+ * @version 2.0
 
  */
 
 package com.payrollapp;
 import com.payrollapp.registration.*;
+import com.payrollapp.authentication.*;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -76,9 +68,27 @@ public class Main {
 
 		} catch (ValidationException e) {
 			System.out.println("\nValidation Failed: " + e.getMessage());
+			return;
 		} catch (IOException e) {
 			System.out.println("\nError saving employee data!");
+			return;
 		}
+
+
+		System.out.println("=== USE CASE 2: EMPLOYEE AUTHENTICATION & LOGIN ===\n");
+
+		AuthenticationService auth = new AuthenticationService();
+		Session session = auth.login();
+
+		if (session != null) {
+			System.out.println("\n" + session);
+			if (!session.isExpired()) {
+				System.out.println("Session active and valid.");
+			} else {
+				System.out.println("Session expired. Please login again.");
+			}
+		}
+
 
 	}
 

@@ -43,6 +43,7 @@ public class Employee {
         FileWriter fw = new FileWriter("employee_data.txt", true);
         fw.write("\n----------------------\n");
         fw.write(this.toString() + "\n");
+        fw.write("Password    : " + account.getPassword() + "\n");
         fw.write("----------------------\n");
         fw.close();
     }

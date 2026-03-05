@@ -1,28 +1,30 @@
 /*
  * =============================================================
- * USE CASE 4: PAYSLIP PRINT / DOWNLOAD
+ * USE CASE 5: DASHBOARD DISPLAY
  * =============================================================
  *
  * Goal of this Use Case:
- * - Protect existing data from accidental modification
- * - Learn how objects can be safely copied
- * - Understand how object equality works
+ * - Display different dashboards based on user role
+ * - Introduce interfaces and runtime behavior selection
+ * - Show how the same data can be presented differently
  *
- * New ideas introduced in UC4:
- * - Immutability
- * - Cloning objects
- * - equals() and hashCode()
- * - Simple file persistence
+ * New ideas introduced in UC5:
+ * - Interface
+ * - Multiple implementations
+ * - Factory for object creation
  *
  * This use case builds on:
- * - UC3: Payslip generation
+ * - UC3: Payslip data
+ * - UC4: Read-only views
 */
+
 package com.payrollapp;
 
 import com.payrollapp.registration.*;
 import com.payrollapp.payslipdownload.*;
 import com.payrollapp.payroll.*;
 import com.payrollapp.authentication.*;
+import com.payrollapp.notifications.*;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -178,6 +180,24 @@ public class Main {
         } else {
             System.out.println("Download token expired.");
         }
+        
+        /*
+         * =============================================================
+         * USE CASE 5: EMPLOYEE NOTIFICATION
+         * =============================================================
+         */
+
+        System.out.println("\n=== USE CASE 5: EMPLOYEE NOTIFICATION ===");
+
+        NotificationService notificationService = new NotificationService();
+
+        EmployeeObserver observer = new EmployeeObserver(emp.toString());
+
+        notificationService.addObserver(observer);
+
+        notificationService.notifyObservers(
+                "Your payslip for this month has been generated and is ready for download."
+        );
 
         sc.close();
     }

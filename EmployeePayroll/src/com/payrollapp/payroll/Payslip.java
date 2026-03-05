@@ -6,7 +6,7 @@ import com.payrollapp.registration.Employee;
  * Payslip represents a monthly salary statement.
  * Aggregates Employee and SalaryComponents.
  */
-public class Payslip {
+public class Payslip  implements Cloneable{
 
     private Employee employee;          // Aggregation
     private SalaryComponents components; // Composition
@@ -41,5 +41,14 @@ public class Payslip {
 
                 "Net Pay : " + components.netPay + "\n" +
                 "===========================\n";
+    }
+    
+    @Override
+    public Object clone() {
+        try {
+            return super.clone();
+        } catch (CloneNotSupportedException e) {
+            return null;
+        }
     }
 }

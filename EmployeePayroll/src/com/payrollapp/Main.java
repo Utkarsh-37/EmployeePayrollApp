@@ -1,25 +1,26 @@
 /*
  * =============================================================
- * USE CASE 3: PAYSLIP GENERATION
+ * USE CASE 4: PAYSLIP PRINT / DOWNLOAD
  * =============================================================
  *
  * Goal of this Use Case:
- * - Understand how multiple objects collaborate
- * - Learn HAS-A relationships between classes
- * - Separate calculation logic from data representation
+ * - Protect existing data from accidental modification
+ * - Learn how objects can be safely copied
+ * - Understand how object equality works
  *
- * New ideas introduced in UC3:
- * - Aggregation
- * - Composition
- * - Service class for business logic
+ * New ideas introduced in UC4:
+ * - Immutability
+ * - Cloning objects
+ * - equals() and hashCode()
+ * - Simple file persistence
  *
  * This use case builds on:
- * - UC1: Object creation
- * - UC2: Object roles and responsibilities
+ * - UC3: Payslip generation
 */
 package com.payrollapp;
 
 import com.payrollapp.registration.*;
+import com.payrollapp.payslipdownload.*;
 import com.payrollapp.payroll.*;
 import com.payrollapp.authentication.*;
 
@@ -31,11 +32,19 @@ public class Main {
     public static void main(String[] args) {
 
         Scanner sc = new Scanner(System.in);
-        Employee emp = null; // must be visible outside try block
+        Employee emp = null;
+        Payslip payslip = null;   // must be accessible to UC4
+
+        /*
+         * =============================================================
+         * USE CASE 1: EMPLOYEE REGISTRATION
+         * =============================================================
+         */
 
         System.out.println("=== USE CASE 1: EMPLOYEE REGISTRATION ===");
 
         try {
+
             System.out.print("Enter Employee ID (EMP-XXXX): ");
             String empId = sc.nextLine();
             Validator.validateEmpId(empId);
@@ -61,7 +70,7 @@ public class Main {
 
             emp = new Employee(empId, name, email, phone, ua);
 
-            emp.persist(); // save to file
+            emp.persist();
 
             System.out.println("\nEmployee Registered Successfully!\n");
             System.out.println(emp);
@@ -121,14 +130,53 @@ public class Main {
             System.out.print("Enter Allowances: ");
             double allowances = sc.nextDouble();
 
+            sc.nextLine(); // clear buffer
+
             PayrollService service = new PayrollService();
 
-            Payslip payslip = service.generatePayslip(emp, base, hra, allowances, month);
+            payslip = service.generatePayslip(emp, base, hra, allowances, month);
 
             System.out.println(payslip);
 
         } catch (Exception e) {
             System.out.println("Error generating payslip");
+        }
+
+        /*
+         * =============================================================
+         * USE CASE 4: PAYSLIP PRINT / DOWNLOAD
+         * =============================================================
+         */
+
+        System.out.println("\n=== USE CASE 4: PAYSLIP PRINT / DOWNLOAD ===");
+
+        if (payslip == null) {
+            System.out.println("No payslip available to download.");
+            sc.close();
+            return;
+        }
+
+        DownloadToken token = new DownloadToken();
+
+        if (!token.isExpired()) {
+
+            try {
+
+                Payslip copy = (Payslip) payslip.clone();
+
+                FileService fileService = new FileService();
+
+                String filename = fileService.savePayslipAsText(copy);
+
+                System.out.println("Payslip downloaded successfully.");
+                System.out.println("Saved as file: " + filename);
+
+            } catch (Exception e) {
+                System.out.println("Error downloading payslip.");
+            }
+
+        } else {
+            System.out.println("Download token expired.");
         }
 
         sc.close();

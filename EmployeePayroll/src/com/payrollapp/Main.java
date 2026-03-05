@@ -1,23 +1,23 @@
 /*
  * =============================================================
- * USE CASE 5: DASHBOARD DISPLAY
+ * USE CASE 6: INPUT VALIDATION
  * =============================================================
  *
  * Goal of this Use Case:
- * - Display different dashboards based on user role
- * - Introduce interfaces and runtime behavior selection
- * - Show how the same data can be presented differently
+ * - Validate user input before it enters the system
+ * - Centralize validation logic
+ * - Learn how exceptions are used to handle invalid data
  *
- * New ideas introduced in UC5:
- * - Interface
- * - Multiple implementations
- * - Factory for object creation
+ * New ideas introduced in UC6:
+ * - Exception hierarchy
+ * - Custom checked exceptions
+ * - Fail-fast validation
  *
- * This use case builds on:
- * - UC3: Payslip data
- * - UC4: Read-only views
+ * This use case brings together lessons from:
+ * - UC1: Input handling
+ * - UC2: Controlled program flow
+ * - UC3–UC5: Clean separation of responsibilities
 */
-
 package com.payrollapp;
 
 import com.payrollapp.registration.*;
@@ -25,6 +25,7 @@ import com.payrollapp.payslipdownload.*;
 import com.payrollapp.payroll.*;
 import com.payrollapp.authentication.*;
 import com.payrollapp.notifications.*;
+import com.payrollapp.audit.*;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -35,7 +36,7 @@ public class Main {
 
         Scanner sc = new Scanner(System.in);
         Employee emp = null;
-        Payslip payslip = null;   // must be accessible to UC4
+        Payslip payslip = null;
 
         /*
          * =============================================================
@@ -77,6 +78,9 @@ public class Main {
             System.out.println("\nEmployee Registered Successfully!\n");
             System.out.println(emp);
 
+            // UC6 LOG
+            AuditService.log("Employee registered: " + empId);
+
         } catch (ValidationException e) {
             System.out.println("\nValidation Failed: " + e.getMessage());
             return;
@@ -110,6 +114,9 @@ public class Main {
 
         System.out.println("Session active and valid.");
 
+        // UC6 LOG
+        AuditService.log("User logged in: " + session);
+
         /*
          * =============================================================
          * USE CASE 3: PAYSLIP GENERATION
@@ -132,13 +139,16 @@ public class Main {
             System.out.print("Enter Allowances: ");
             double allowances = sc.nextDouble();
 
-            sc.nextLine(); // clear buffer
+            sc.nextLine();
 
             PayrollService service = new PayrollService();
 
             payslip = service.generatePayslip(emp, base, hra, allowances, month);
 
             System.out.println(payslip);
+
+            // UC6 LOG
+            AuditService.log("Payslip generated for employee.");
 
         } catch (Exception e) {
             System.out.println("Error generating payslip");
@@ -173,6 +183,9 @@ public class Main {
                 System.out.println("Payslip downloaded successfully.");
                 System.out.println("Saved as file: " + filename);
 
+                // UC6 LOG
+                AuditService.log("Payslip downloaded: " + filename);
+
             } catch (Exception e) {
                 System.out.println("Error downloading payslip.");
             }
@@ -180,7 +193,7 @@ public class Main {
         } else {
             System.out.println("Download token expired.");
         }
-        
+
         /*
          * =============================================================
          * USE CASE 5: EMPLOYEE NOTIFICATION
@@ -198,6 +211,9 @@ public class Main {
         notificationService.notifyObservers(
                 "Your payslip for this month has been generated and is ready for download."
         );
+
+        // UC6 LOG
+        AuditService.log("Notification sent to employee.");
 
         sc.close();
     }
